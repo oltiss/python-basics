@@ -7,12 +7,16 @@ cur = con.cursor()
 
 cur.execute(
         """
-        CREATE TABLE IF NOT EXISTS tasks (
+        CREATE TABLE IF NOT EXISTS test (
             id INTEGER PRIMARY KEY,
             name TEXT NOT NULL,
-            deadline TEXT NULLABLE,
-            priority TEXT NOT NULL,
-            completed BOOL NOT NULL
+            age INTEGER NOT NULL
         )
     """
     )
+
+
+
+cur.execute("INSERT INTO test (name, age) VALUES(?, ?)", ("Joe", 30))
+con.commit()
+con.close()
