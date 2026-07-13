@@ -7,13 +7,6 @@ def _conn_to_db(db_name: str):
     cur = conn.cursor()
     return conn, cur
 
-def _validate_input(question: str, error: str):
-    try:
-        answer = int(input(question))
-        return answer
-    except ValueError:
-        print(error)
-        return None
 
 # Initializating database
 def init_db():
@@ -25,8 +18,7 @@ def init_db():
             id INTEGER PRIMARY KEY,
             name TEXT NOT NULL,
             deadline TEXT,
-            priority TEXT NOT NULL,
-            completed TEXT NOT NULL DEFAULT NO
+            priority TEXT NOT NULL
         )
     """
     )
@@ -52,21 +44,28 @@ def list_all_tasks():
         conn.close()
 
         if rows:
-            t.add_row(["ID", "Name", "Deadline", "Priority", "Completed"])
+            t.add_row(["ID", "Name", "Deadline", "Priority"])
+            i = 0
 
             for row in rows:
-                t.add_row([row[0], row[1], row[2], row[3], row[4]])
+                t.add_row([row[0], row[1], row[2], row[3]])
+                i += 1
 
             print(t.draw())
+            print("=====================================")
+
+            if i == 1:
+                return f"\033[1mYou have {i} task \033[0m"
+            else:
+                return f"\033[1mYou have {i} tasks \033[0m"
+
 
         else:
-            print("You don't have any tasks")
+            return "\033[1mYou don't have any tasks\033[0m"
 
-        print()
-        # print("=====================================")
 
     except Exception as e:
-        print(e)
+        return e
 
 # Adding task
 def add_task():
@@ -76,11 +75,15 @@ def add_task():
     try:
         name = input("Enter name of task: ")
         deadline = input("Enter deadline of task (YYYY-MM-DD): ")
+        # Date validation
+
         priority_num = int(input("Enter priority of task (1-low, 2-medium, 3-high): "))
 
+        if name == "":
+            return print("You must enter a name! Please try again.")
+
         if priority_num not in priority_map:
-            print("Invalid priority. Please enter a number from 1-3.")
-            return
+            return print("Invalid priority. Please enter a number from 1-3.")
 
         priority_str = priority_map[priority_num]
 
@@ -98,12 +101,93 @@ def add_task():
         print(e)
 
 # Editing task
-def edit_task(id):
-    return
+def edit_task():
+    print(list_all_tasks())
+
+    priority_map = {1: "low", 2: "medium", 3: "high"}
+
+
+    try:
+        id = int(input("Enter ID of task you want to edit: "))
+
+        conn, cur = _conn_to_db("tasks.db")
+
+        query = "SELECT * FROM tasks WHERE id = ?"
+        cur.execute(query, (id, ))
+        task = cur.fetchall()
+
+        if not task:
+            conn.close()
+            return print("Task with this ID doesn't exists")
+
+        new_name = input(f"Enter new name or press enter to skip (old: {task[0][1]}): ")
+        if new_name == "":
+            new_name = task[0][1]
+
+
+        new_deadline = input(f"Enter new deadline or press enter to skip (old: {task[0][2]}): ")
+        if new_deadline == "":
+            new_deadline = task[0][2]
+        # Date validation
+
+        new_priority_num = input(f"Enter new priority (1-3) or press enter to skip (old: {task[0][3]}): ")
+        if new_priority_num == "":
+            new_priority_str = task[0][3]
+        else:
+            int(new_priority_num)
+
+            if new_priority_num not in priority_map:
+                conn.close()
+                return print("Invalid priority. Please enter a number from 1-3.")
+
+            new_priority_str = priority_map[new_priority_num]
+
+        update_query = "UPDATE tasks SET name = ?, deadline = ?, priority = ? WHERE id = ?"
+        cur.execute(update_query, (new_name, new_deadline, new_priority_str, id))
+        conn.commit()
+        conn.close()
+
+        return print(f"Successfully updated task with ID = {id}")
+
+
+
+
+    except ValueError:
+        print("Invalid input. Your input must be a number. Please try again.")
 
 # Deleting task
-def delete_task(id):
-    return
+def delete_task():
+    print(list_all_tasks())
+
+    try:
+        conn, cur = _conn_to_db("tasks.db")
+
+        id = int(input("Enter ID of task which you want to delete: "))
+
+        query = "SELECT * FROM tasks WHERE id = ?"
+        cur.execute(query, (id, ))
+        task = cur.fetchall()
+
+        if not task:
+            conn.close()
+            return print("Task with this ID doesn't exists")
+
+        confirmation = input(f"Are you sure you want to delete task with ID = {task[0][0]} (y/N): ")
+
+        if confirmation == "y" or confirmation == "Y":
+            delete_query = "DELETE FROM tasks WHERE id = ?"
+            cur.execute(delete_query, (task[0][0], ))
+            conn.commit()
+            conn.close()
+            return print(f"Successfully deleted task with ID = {task[0][0]}")
+        else:
+            conn.close()
+            return print(f"Deletion of task with ID = {task[0][0]} has been cancelled")
+
+
+    except ValueError:
+        print("Task with this ID doesn't exists")
+
 
 # prints menu
 def print_menu():
@@ -135,16 +219,16 @@ def main():
 
         match choice:
             case 1:
-                list_all_tasks()
+                print(list_all_tasks())
                 input("Press Enter to continue...")
             case 2:
                 add_task()
                 input("Press Enter to continue...")
             case 3:
-                print("Edit task")
+                edit_task()
                 input("Press Enter to continue...")
             case 4:
-                print("Delete task")
+                delete_task()
                 input("Press Enter to continue...")
             case 5:
                 print("Thanks for using my ToDo App")
