@@ -1,5 +1,6 @@
-import time, os
+import  os
 import sqlite3
+from datetime import datetime, date
 
 # helper that connects to database
 def _conn_to_db(db_name: str):
@@ -27,6 +28,21 @@ def init_db():
 
     print("Database has been initialized")
 
+
+def validate_date(input) -> str:
+    try:
+        valid_date = datetime.strptime(input, "%Y-%m-%d")
+
+        if valid_date < datetime.now():
+            print("Error: Date can't be from past. Please try again.")
+            return ""
+
+        return valid_date.strftime("%Y-%m-%d")
+    except ValueError:
+        print("Error: Invalid date format or non-existent day entered. Please try again.")
+        return ""
+
+
 ## CRUD functions
 
 # Listing all tasks
@@ -46,9 +62,22 @@ def list_all_tasks():
         if rows:
             t.add_row(["ID", "Name", "Deadline", "Priority"])
             i = 0
+            today = date.today()
+
+
 
             for row in rows:
-                t.add_row([row[0], row[1], row[2], row[3]])
+                deadline = datetime.strptime(row[2], "%Y-%m-%d").date()
+                difference = deadline - today
+                difference = difference.days
+                if difference == 1:
+                    date_display = f"{difference} day"
+                elif difference <= 0:
+                    date_display = f"{0} days !!!"
+                else:
+                    date_display = f"{difference} days"
+
+                t.add_row([row[0], row[1], date_display, row[3]])
                 i += 1
 
             print(t.draw())
@@ -76,6 +105,9 @@ def add_task():
         name = input("Enter name of task: ")
         deadline = input("Enter deadline of task (YYYY-MM-DD): ")
         # Date validation
+        deadline = validate_date(deadline)
+        if deadline == "":
+            return
 
         priority_num = int(input("Enter priority of task (1-low, 2-medium, 3-high): "))
 
@@ -115,9 +147,9 @@ def edit_task():
         query = "SELECT * FROM tasks WHERE id = ?"
         cur.execute(query, (id, ))
         task = cur.fetchall()
+        conn.close()
 
         if not task:
-            conn.close()
             return print("Task with this ID doesn't exists")
 
         new_name = input(f"Enter new name or press enter to skip (old: {task[0][1]}): ")
@@ -129,18 +161,23 @@ def edit_task():
         if new_deadline == "":
             new_deadline = task[0][2]
         # Date validation
+        new_deadline = validate_date(new_deadline)
+        if new_deadline == "":
+            return
+
 
         new_priority_num = input(f"Enter new priority (1-3) or press enter to skip (old: {task[0][3]}): ")
         if new_priority_num == "":
             new_priority_str = task[0][3]
         else:
-            int(new_priority_num)
+            new_priority_num = int(new_priority_num)
 
             if new_priority_num not in priority_map:
-                conn.close()
                 return print("Invalid priority. Please enter a number from 1-3.")
 
             new_priority_str = priority_map[new_priority_num]
+
+        conn, cur = _conn_to_db("tasks.db")
 
         update_query = "UPDATE tasks SET name = ?, deadline = ?, priority = ? WHERE id = ?"
         cur.execute(update_query, (new_name, new_deadline, new_priority_str, id))

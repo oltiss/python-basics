@@ -13,4 +13,3 @@
     - Save tasks in SQLite,
     - Create, Read, Update, Delete (CRUD)
     - Deadlines and Priorities
-    - Searching and Filtering tasks
