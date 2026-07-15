@@ -1,4 +1,4 @@
-## Basic projects that will help you learn python
+## Basic projects that will help you learn Python
 ### 1. CLI Calculator
 #### Basic CLI Calculator with functions like:
     - Adding numbers,
@@ -8,3 +8,8 @@
     - Square root,
     - Exponentiation,
     - History of operations
+### 2. CLI To Do App
+#### To Do App with ability to:
+    - Save tasks in SQLite,
+    - Create, Read, Update, Delete (CRUD)
+    - Deadlines and Priorities
