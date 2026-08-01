@@ -11,7 +11,7 @@ def _conn_to_db(db_name: str):
 
 # Initializating database
 def init_db():
-    conn, cur = _conn_to_db("tasks.db")
+    conn, cur = _conn_to_db("2.todo_cli/tasks.db")
 
     cur.execute(
         """
