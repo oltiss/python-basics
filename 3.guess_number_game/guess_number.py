@@ -94,44 +94,72 @@ def show_stats():
     total_games = total_games[0]
 
 
-    total_sum = cur.execute("SELECT SUM(guesses) FROM results")
-    total_sum = cur.fetchone()
-    total_average = round((total_sum[0] / total_games), 2)
+    if total_games:
+        total_sum = cur.execute("SELECT SUM(guesses) FROM results")
+        total_sum = cur.fetchone()
+        total_average = round((total_sum[0] / total_games), 2)
+    else:
+        total_average = 0
+        total_games = 0
 
 
     easy_games = cur.execute("SELECT COUNT(*) FROM results WHERE level = 'Easy'")
     easy_games = cur.fetchone()
     easy_games = easy_games[0]
 
-
-    easy_sum = cur.execute("SELECT SUM(guesses) FROM results WHERE level = 'Easy'")
-    easy_sum = cur.fetchone()
-    easy_average = round((easy_sum[0] / easy_games), 2)
+    if easy_games:
+        easy_sum = cur.execute("SELECT SUM(guesses) FROM results WHERE level = 'Easy'")
+        easy_sum = cur.fetchone()
+        easy_average = round((easy_sum[0] / easy_games), 2)
+    else:
+        easy_games = 0
+        easy_average = 0
 
 
     medium_games = cur.execute("SELECT COUNT(*) FROM results WHERE level = 'Medium'")
     medium_games = cur.fetchone()
     medium_games = medium_games[0]
 
-
-    medium_sum = cur.execute("SELECT SUM(guesses) FROM results WHERE level = 'Medium'")
-    medium_sum = cur.fetchone()
-    medium_average = round((medium_sum[0] / medium_games), 2)
+    if medium_games:
+        medium_sum = cur.execute("SELECT SUM(guesses) FROM results WHERE level = 'Medium'")
+        medium_sum = cur.fetchone()
+        medium_average = round((medium_sum[0] / medium_games), 2)
+    else:
+        medium_games = 0
+        medium_average = 0
 
 
     hard_games = cur.execute("SELECT COUNT(*) FROM results WHERE level = 'Hard'")
     hard_games = cur.fetchone()
     hard_games = hard_games[0]
 
-    hard_sum = cur.execute("SELECT SUM(guesses) FROM results WHERE level = 'Hard'")
-    hard_sum = cur.fetchone()
-    hard_average = round((hard_sum[0] / hard_games), 2)
+    if hard_games:
+        hard_sum = cur.execute("SELECT SUM(guesses) FROM results WHERE level = 'Hard'")
+        hard_sum = cur.fetchone()
+        hard_average = round((hard_sum[0] / hard_games), 2)
+    else:
+        hard_games = 0
+        hard_average = 0
 
     conn.close()
 
     stats = [total_games, total_average, easy_games, easy_average, medium_games, medium_average, hard_games, hard_average]
 
-    return stats
+    print("================ STATS ================")
+    print("Total games:             ", total_games)
+    print("Total games average:     ", total_average)
+    print("")
+    print("Easy games:              ", easy_games)
+    print("Easy games average:      ", easy_average)
+    print("")
+    print("Medium games:            ", medium_games)
+    print("Medium games average:    ", medium_average)
+    print("")
+    print("Hard games:              ", hard_games)
+    print("Hard games average:      ", hard_average)
+    print("=======================================")
+
+
 
 
 def main():
@@ -147,8 +175,7 @@ def main():
                 input("Press enter...")
                 continue
             case "2":
-                stats = show_stats()
-                print(stats)
+                show_stats()
                 input("Press enter...")
                 continue
             case "3":
@@ -156,6 +183,7 @@ def main():
                 isRunning = False
             case _:
                 print("Please enter number from 1-3 !!!")
+                input("Press enter...")
                 continue
 
 
