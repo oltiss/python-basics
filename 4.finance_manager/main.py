@@ -34,13 +34,12 @@ def add_income():
             print("You cannot enter negative or zero income!")
         else:
 
-
+            category = ""
             query = "INSERT INTO finances (amount, category) VALUES(?, ?)"
             cur.execute(query, (amount, category))
 
     except ValueError:
         print("Please enter a number!")
-
 
 
 
