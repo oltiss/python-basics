@@ -5,3 +5,4 @@ test.py
 2.todo_cli/.venv/
 3.guess_number_game/results.db
 4.finance_manager/finances.db
+4.finance_manager/.venv

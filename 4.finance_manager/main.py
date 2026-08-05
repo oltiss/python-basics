@@ -1,7 +1,8 @@
 import sqlite3
 import subprocess
+from texttable import Texttable
 
-
+t = Texttable()
 db_name = "4.finance_manager/finances.db"
 
 
@@ -22,6 +23,16 @@ def init_db():
         )
     """)
     conn.commit()
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS categories (
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL,
+            type TEXT NOT NULL
+        )
+    """)
+    conn.commit()
+
     conn.close()
 
 
@@ -43,6 +54,22 @@ def add_income():
 
 
 
+# Manage categories
+def categories():
+    conn, cur = _conn_to_db()
+
+    # List all categories
+    query = "SELECT * FROM categories"
+    cur.execute(query)
+    rows = cur.fetchall()
+
+    t.add_row(["ID", "Name", "Type"])
+
+    for row in rows:
+        t.add_row([row[0], row[1], row[2]])
+
+    t.draw()
+
 
 def print_menu():
     print("========= FINANCE MANAGER =========")
@@ -51,15 +78,15 @@ def print_menu():
     print("3. Show balance")
     print("4. Show monthly expense analysis")
     print("5. Manage categories")
-    print("5. Quit")
+    print("6. Quit")
     print("===================================")
 
 def main():
     while True:
         subprocess.run(["clear"])
-        print_menu()
+        print_menu() 
 
-        choice = input("Enter number from 1-5: ")
+        choice = input("Enter number from 1-6: ")
 
         match choice:
             case "1":
@@ -75,10 +102,13 @@ def main():
                 print("4")
                 input("Press enter...")
             case "5":
+                categories()
+                input("Press enter...")
+            case "6":
                 print("Thanks for using my finance manager!")
                 break
             case _:
-                print("Please enter number from 1-5")
+                print("Please enter number from 1-6")
                 input("Press enter...")
 
 
