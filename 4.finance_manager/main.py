@@ -2,7 +2,6 @@ import sqlite3
 import subprocess
 from texttable import Texttable
 
-t = Texttable()
 db_name = "4.finance_manager/finances.db"
 
 
@@ -56,19 +55,23 @@ def add_income():
 
 # Manage categories
 def categories():
+    t = Texttable()
     conn, cur = _conn_to_db()
 
     # List all categories
     query = "SELECT * FROM categories"
     cur.execute(query)
     rows = cur.fetchall()
+    conn.commit()
 
-    t.add_row(["ID", "Name", "Type"])
-
-    for row in rows:
-        t.add_row([row[0], row[1], row[2]])
-
-    t.draw()
+    if rows:
+        t.add_row(["ID", "Name", "Type"])
+        for row in rows:
+            t.add_row([row[0], row[1], row[2]])
+        print(t.draw())
+    else:
+        print("No categories found.")
+    conn.close()
 
 
 def print_menu():
@@ -84,7 +87,7 @@ def print_menu():
 def main():
     while True:
         subprocess.run(["clear"])
-        print_menu() 
+        print_menu()
 
         choice = input("Enter number from 1-6: ")
 
