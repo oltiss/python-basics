@@ -54,7 +54,56 @@ def add_income():
 
 
 # Manage categories
-def categories():
+def manage_categories():
+    subprocess.run(["clear"])
+    print("========= CATEGORIES =========")
+    print("1. Add category")
+    print("2. Delete category")
+    print("3. Edit category")
+    print("4. Show categories")
+    print("5. Return to main menu")
+    print("==============================")
+
+    choice = input("Enter number from 1-5: ")
+
+    match choice:
+        case "1":
+            add_category()
+        case "2":
+            delete_category()
+        case "3":
+            edit_category()
+        case "4":
+            show_categories()
+        case "5":
+            return False
+
+
+def add_category():
+    name = input("Enter name of category: ")
+    type = input("Enter type of category (1 - income, 2 - expense): ")
+    if type == '1':
+        type = "income"
+    elif type == '2':
+        type = "expense"
+    else:
+        print("Please enter valid number!")
+        return
+
+    query = """INSERT INTO categories (name, type) VALUES(?, ?)"""
+    conn, cur = _conn_to_db()
+    cur.execute(query, (name, type))
+    conn.commit()
+    conn.close()
+
+def delete_category():
+    return
+
+
+def edit_category():
+    return
+
+def show_categories():
     t = Texttable()
     conn, cur = _conn_to_db()
 
@@ -62,7 +111,6 @@ def categories():
     query = "SELECT * FROM categories"
     cur.execute(query)
     rows = cur.fetchall()
-    conn.commit()
 
     if rows:
         t.add_row(["ID", "Name", "Type"])
@@ -105,8 +153,11 @@ def main():
                 print("4")
                 input("Press enter...")
             case "5":
-                categories()
-                input("Press enter...")
+                ok = manage_categories()
+                if ok:
+                    input("Press enter...")
+                else:
+                    continue
             case "6":
                 print("Thanks for using my finance manager!")
                 break
