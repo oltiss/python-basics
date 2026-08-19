@@ -97,7 +97,16 @@ def add_category():
     conn.close()
 
 def delete_category():
-    return
+    ok = show_categories()
+    if ok:
+        try:
+            id = int(input("Enter ID of category you want to delete: "))
+
+            query = """DELETE"""
+
+
+        except ValueError:
+            print("This is not valid ID!")
 
 
 def edit_category():
@@ -107,19 +116,27 @@ def show_categories():
     t = Texttable()
     conn, cur = _conn_to_db()
 
-    # List all categories
-    query = "SELECT * FROM categories"
-    cur.execute(query)
-    rows = cur.fetchall()
+    try:
 
-    if rows:
-        t.add_row(["ID", "Name", "Type"])
-        for row in rows:
-            t.add_row([row[0], row[1], row[2]])
-        print(t.draw())
-    else:
-        print("No categories found.")
-    conn.close()
+        # List all categories
+        query = "SELECT * FROM categories"
+        cur.execute(query)
+        rows = cur.fetchall()
+
+        if rows:
+            t.add_row(["ID", "Name", "Type"])
+            for row in rows:
+                t.add_row([row[0], row[1], row[2]])
+            print(t.draw())
+            return True
+        else:
+            print("No categories found.")
+            return False
+    except Exception as e:
+        print(e)
+        return False
+    finally:
+        conn.close()
 
 
 def print_menu():
