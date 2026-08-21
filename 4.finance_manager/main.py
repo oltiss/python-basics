@@ -69,12 +69,16 @@ def manage_categories():
     match choice:
         case "1":
             add_category()
+            input("Press enter...")
         case "2":
             delete_category()
+            input("Press enter...")
         case "3":
             edit_category()
+            input("Press enter...")
         case "4":
             show_categories()
+            input("Press enter...")
         case "5":
             return False
 
@@ -96,21 +100,84 @@ def add_category():
     conn.commit()
     conn.close()
 
+
 def delete_category():
     ok = show_categories()
     if ok:
         try:
             id = int(input("Enter ID of category you want to delete: "))
 
-            query = """DELETE"""
+            conn, cur = _conn_to_db()
 
+            query = """SELECT * FROM categories WHERE id = ?"""
+            cur.execute(query, (id, ))
+            category = cur.fetchall()
+
+            if not category:
+                return print("Category with this ID doesn't exists!")
+
+            confirmation = input(f"Are you sure you want to delete category with ID = {category[0][0]} (y/N): ")
+
+            if confirmation == "y" or confirmation == "Y":
+                delete_query = """DELETE FROM categories WHERE id = ?"""
+                cur.execute(delete_query, (id, ))
+                conn.commit()
+                print(f"Successfully deleted category with ID = {category[0][0]}!")
+            else:
+                print("Deletion has been canceled.")
 
         except ValueError:
             print("This is not valid ID!")
+        except Exception as e:
+            print(e)
+        finally:
+            conn.close()
 
 
 def edit_category():
-    return
+    ok = show_categories()
+    if ok:
+        try:
+            id = int(input("Enter ID of category you want to edit: "))
+
+            conn, cur = _conn_to_db()
+
+            query = """SELECT * FROM categories WHERE id = ?"""
+            cur.execute(query, (id, ))
+            category = cur.fetchall()
+
+            if not category:
+                return print("Category with this ID doesn't exists!")
+
+
+            name = category[0][1]
+            type = category[0][2]
+
+            new_name = input(f"Enter new name or press enter to skip (old: {name}): ")
+            if new_name == "":
+                new_name = name
+
+            new_type = input(f"Enter new type (1 - income, 2 - expense) or press enter to skip (old: {type}): ")
+            if new_type == "":
+                new_type = type
+            elif new_type == "1":
+                new_type = "income"
+            elif new_type == "2":
+                new_type = "expense"
+            else:
+                return print("Please enter number from 1-2!")
+
+            edit_query = """UPDATE categories SET name = ?, type = ? WHERE id = ?"""
+            cur.execute(edit_query, (new_name, new_type, id))
+            conn.commit()
+
+            print(f"Successfully updated category with ID = {id}")
+
+        except ValueError:
+            print("This is not valid ID!")
+        finally:
+            conn.close()
+
 
 def show_categories():
     t = Texttable()
