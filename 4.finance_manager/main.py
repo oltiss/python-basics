@@ -39,17 +39,33 @@ def add_income():
 
     try:
         conn, cur = _conn_to_db()
-        amount = input("Enter amount: ")
+        amount = float(input("Enter amount: "))
         if amount >= 0:
-            print("You cannot enter negative or zero income!")
-        else:
+            return print("You cannot enter negative or zero income!")
 
-            category = ""
-            query = "INSERT INTO finances (amount, category) VALUES(?, ?)"
-            cur.execute(query, (amount, category))
+        categories_query = "SELECT * FROM categories WHERE type = 'income'"
+        cur.execute(categories_query)
+        rows = cur.fetchall()
+        t = Texttable()
+        t.add_row("ID", "Name")
+        for row in rows:
+            t.add_row(row[0], row[1])
+        print(t.draw())
+
+        id = int(input("Enter ID of category: "))
+
+        category_query = "SELECT * FROM categories WHERE id = ?"
+        cur.execute(category_query)
+        category = cur.fetchall()
+        category = category[0][1]
+
+        insert_query = "INSERT INTO finances (amount, category) VALUES(?, ?)"
+        cur.execute(insert_query, (amount, category))
 
     except ValueError:
         print("Please enter a number!")
+    finally:
+        conn.close()
 
 
 
@@ -215,6 +231,7 @@ def print_menu():
     print("5. Manage categories")
     print("6. Quit")
     print("===================================")
+
 
 def main():
     while True:
