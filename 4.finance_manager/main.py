@@ -40,27 +40,33 @@ def add_income():
     try:
         conn, cur = _conn_to_db()
         amount = float(input("Enter amount: "))
-        if amount >= 0:
+        if amount <= 0:
             return print("You cannot enter negative or zero income!")
 
         categories_query = "SELECT * FROM categories WHERE type = 'income'"
         cur.execute(categories_query)
         rows = cur.fetchall()
         t = Texttable()
-        t.add_row("ID", "Name")
+        t.add_row(["ID", "Name"])
         for row in rows:
-            t.add_row(row[0], row[1])
+            t.add_row([row[0], row[1]])
         print(t.draw())
 
         id = int(input("Enter ID of category: "))
 
         category_query = "SELECT * FROM categories WHERE id = ?"
-        cur.execute(category_query)
+        cur.execute(category_query, (id, ))
         category = cur.fetchall()
+
+        if not category:
+            return print("Category with this ID doesn't exists")
+
         category = category[0][1]
 
         insert_query = "INSERT INTO finances (amount, category) VALUES(?, ?)"
         cur.execute(insert_query, (amount, category))
+        conn.commit()
+        print("Successfully added income")
 
     except ValueError:
         print("Please enter a number!")
@@ -68,6 +74,60 @@ def add_income():
         conn.close()
 
 
+def add_expense():
+    try:
+        conn, cur = _conn_to_db()
+        amount = float(input("Enter amount: "))
+        if amount <= 0:
+            return print("You cannot enter negative or zero expense!")
+
+        categories_query = "SELECT * FROM categories WHERE type = 'expense'"
+        cur.execute(categories_query)
+        rows = cur.fetchall()
+        t = Texttable()
+        t.add_row(["ID", "Name"])
+        for row in rows:
+            t.add_row([row[0], row[1]])
+        print(t.draw())
+
+        id = int(input("Enter ID of category: "))
+
+        category_query = "SELECT * FROM categories WHERE id = ?"
+        cur.execute(category_query, (id, ))
+        category = cur.fetchall()
+
+        if not category:
+            return print("Category with this ID doesn't exists")
+
+        category = category[0][1]
+
+        insert_query = "INSERT INTO finances (amount, category) VALUES(?, ?)"
+        cur.execute(insert_query, (amount, category))
+        conn.commit()
+        print("Successfully added expense")
+
+    except ValueError:
+        print("Please enter a number!")
+    finally:
+        conn.close()
+
+
+
+# temporary to display table from db
+def show_balance():
+    t = Texttable()
+    conn, cur = _conn_to_db()
+    query = "SELECT * FROM finances"
+    cur.execute(query)
+    rows = cur.fetchall()
+    t.add_row(["ID", "Amount", "category", "timestamp"])
+    t.set_cols_dtype(["t", "t", "t", "t"])
+    for row in rows:
+
+        t.add_row([str(row[0]), str(row[1]), row[2], row[3]])
+
+    print(t.draw())
+    conn.close()
 
 # Manage categories
 def manage_categories():
@@ -96,7 +156,10 @@ def manage_categories():
             show_categories()
             input("Press enter...")
         case "5":
-            return False
+            return
+        case _:
+            print("Please enter number from 1-6")
+            return input("Press enter...")
 
 
 def add_category():
@@ -227,7 +290,7 @@ def print_menu():
     print("1. Add income")
     print("2. Add expense")
     print("3. Show balance")
-    print("4. Show monthly expense analysis")
+    print("4. Show monthly finance analysis")
     print("5. Manage categories")
     print("6. Quit")
     print("===================================")
@@ -242,23 +305,19 @@ def main():
 
         match choice:
             case "1":
-                print("1")
+                add_income()
                 input("Press enter...")
             case "2":
-                print("2")
+                add_expense()
                 input("Press enter...")
             case "3":
-                print("3")
+                show_balance()
                 input("Press enter...")
             case "4":
                 print("4")
                 input("Press enter...")
             case "5":
-                ok = manage_categories()
-                if ok:
-                    input("Press enter...")
-                else:
-                    continue
+                manage_categories()
             case "6":
                 print("Thanks for using my finance manager!")
                 break
