@@ -129,6 +129,16 @@ def show_balance():
     print(t.draw())
     conn.close()
 
+
+
+
+def show_chars():
+    import matplotlib.pyplot as plt
+
+    
+
+
+
 # Manage categories
 def manage_categories():
     subprocess.run(["clear"])
